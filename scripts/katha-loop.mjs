@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -128,34 +128,39 @@ async function releaseStale(db) {
 }
 
 async function claim(db) {
-  const { data: rows, error } = await db
-    .from("requests")
-    .select("id, cache_key, mode, kind, size, word_ids, attempts")
-    .eq("status", "pending")
-    .order("created_at", { ascending: true })
-    .limit(1);
-  if (error) {
-    throw new Error(error.message);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const { data: rows, error } = await db
+      .from("requests")
+      .select("id, cache_key, mode, kind, size, word_ids, attempts")
+      .eq("status", "pending")
+      .order("created_at", { ascending: true })
+      .limit(1);
+    if (error) {
+      throw new Error(error.message);
+    }
+    const row = rows?.[0];
+    if (!row) {
+      return null;
+    }
+    const { data: claimed, error: claimError } = await db
+      .from("requests")
+      .update({
+        status: "running",
+        claimed_at: new Date().toISOString(),
+        attempts: row.attempts + 1,
+      })
+      .eq("id", row.id)
+      .eq("status", "pending")
+      .select("id, cache_key, mode, kind, size, word_ids, attempts")
+      .maybeSingle();
+    if (claimError) {
+      throw new Error(claimError.message);
+    }
+    if (claimed) {
+      return claimed;
+    }
   }
-  const row = rows?.[0];
-  if (!row) {
-    return null;
-  }
-  const { data: claimed, error: claimError } = await db
-    .from("requests")
-    .update({
-      status: "running",
-      claimed_at: new Date().toISOString(),
-      attempts: row.attempts + 1,
-    })
-    .eq("id", row.id)
-    .eq("status", "pending")
-    .select("id, cache_key, mode, kind, size, word_ids, attempts")
-    .maybeSingle();
-  if (claimError) {
-    throw new Error(claimError.message);
-  }
-  return claimed;
+  return null;
 }
 
 async function fail(db, row, message) {
@@ -223,6 +228,7 @@ async function tick(db, cwd) {
   mkdirSync(outDir, { recursive: true });
   const brief = writeBrief(requestsDir, row, words);
   const outFile = join(outDir, `${row.id}.md`);
+  rmSync(outFile, { force: true });
   console.log(`[katha] brief ${brief}`);
   try {
     await runGrok(
@@ -246,6 +252,32 @@ async function tick(db, cwd) {
   }
   await succeed(db, row, body);
 }
+
+function loadEnvFile(file) {
+  if (!existsSync(file)) {
+    return;
+  }
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) {
+      continue;
+    }
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+loadEnvFile(join(process.cwd(), ".env.local"));
 
 const once = process.argv.includes("--once");
 const interval = parseInterval(argValue("--interval") ?? process.env.KATHA_LOOP_INTERVAL);

@@ -137,6 +137,7 @@ export function KathaApp({
       return;
     }
     let stop = false;
+    let timer = 0;
     const tick = () => {
       fetch(`/api/requests/${requestId}`)
         .then((response) => response.json())
@@ -146,7 +147,7 @@ export function KathaApp({
           }
           const row = data.request;
           if (!row || row.status === "pending" || row.status === "running") {
-            window.setTimeout(tick, 3000);
+            timer = window.setTimeout(tick, 3000);
             return;
           }
           if (row.status === "done" && row.piece) {
@@ -163,13 +164,14 @@ export function KathaApp({
         })
         .catch(() => {
           if (!stop) {
-            window.setTimeout(tick, 3000);
+            timer = window.setTimeout(tick, 3000);
           }
         });
     };
     tick();
     return () => {
       stop = true;
+      window.clearTimeout(timer);
     };
   }, [requestId, requestKey]);
 
@@ -338,7 +340,7 @@ export function KathaApp({
 
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-card p-3 lg:hidden">
         <button type="button" className="w-full rounded-2xl bg-clay py-3 text-white" onClick={() => setPanelOpen(true)}>
-          {qualifying.length} selecionadas · {mode === "story" ? "Criar história" : mode === "poem" ? "Criar poema" : "Criar haiku"}
+          {selected.length} selecionadas · {mode === "story" ? "Criar história" : mode === "poem" ? "Criar poema" : "Criar haiku"}
         </button>
       </div>
       {panelOpen ? (

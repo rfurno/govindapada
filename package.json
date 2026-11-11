@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "katha-loop": "node --experimental-strip-types --env-file=.env.local scripts/katha-loop.mjs"
+    "katha-loop": "node --experimental-strip-types scripts/katha-loop.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

@@ -88,7 +88,7 @@ export function Reader({
           )}
         </div>
       ) : null}
-      {total > 0 ? (
+      {total > 1 ? (
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
           <button type="button" className="rounded-full border border-line px-3 py-1 disabled:opacity-40" onClick={onPrev} disabled={index >= total - 1}>
             Anterior
@@ -99,7 +99,11 @@ export function Reader({
           <button type="button" className="rounded-full border border-line px-3 py-1 disabled:opacity-40" onClick={onNext} disabled={index === 0}>
             Seguinte
           </button>
-          <button type="button" className="rounded-full border border-line px-3 py-1" onClick={onAnother}>
+        </div>
+      ) : null}
+      {total > 0 ? (
+        <div className="mt-4">
+          <button type="button" className="rounded-full border border-line px-3 py-1 text-sm" onClick={onAnother}>
             Gerar outra
           </button>
         </div>

@@ -29,6 +29,6 @@ On the laptop, in this repo:
 npm run katha-loop
 ```
 
-That polls once a minute. `--once` handles a single pending request. `XAI_API_KEY` is removed from the environment before `grok -p`. The skill is `.grok/skills/katha/SKILL.md`.
+That polls once a minute. `--once` handles a single pending request. The script reads `.env.local` when that file is present, and removes `XAI_API_KEY` before `grok -p`. The skill is `.grok/skills/katha/SKILL.md`.
 
 A request stays pending until this process is running. A claim older than 30 minutes returns to the queue. Two failed attempts mark the request as an error.
