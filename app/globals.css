@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-serif: var(--font-literata), Georgia, serif;
+  --font-deva: var(--font-devanagari), "Noto Serif Devanagari", serif;
+  --color-paper: #f3efe6;
+  --color-ink: #1d1a17;
+  --color-muted: #6f675f;
+  --color-card: #fffdf8;
+  --color-line: #e6d9c8;
+  --color-peach: #f6e3d6;
+  --color-peach-line: #c17b5a;
+  --color-clay: #c46b49;
+  --color-clay-deep: #9a4e32;
+  --color-chip: #1c1917;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
