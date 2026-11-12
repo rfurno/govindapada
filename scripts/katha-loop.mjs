@@ -27,17 +27,17 @@ function argValue(flag) {
 
 function parseInterval(raw) {
   if (!raw) {
-    return 60 * 1000;
+    return 10 * 1000;
   }
   const match = String(raw).trim().match(/^(\d+)\s*(ms|s|m|h)$/i);
   if (!match) {
-    throw new Error(`Bad interval "${raw}". Use 30s, 1m, or 5m.`);
+    throw new Error(`Bad interval "${raw}". Use 10s, 30s, or 1m.`);
   }
   const n = Number(match[1]);
   const unit = match[2].toLowerCase();
   const ms = unit === "ms" ? n : unit === "s" ? n * 1000 : unit === "m" ? n * 60 * 1000 : n * 60 * 60 * 1000;
-  if (ms < 15 * 1000) {
-    throw new Error("Interval must be at least 15s");
+  if (ms < 10 * 1000) {
+    throw new Error("Interval must be at least 10s");
   }
   return ms;
 }
@@ -58,11 +58,28 @@ function grokEnv() {
 
 function runGrok(bin, cwd, prompt) {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, ["-p", prompt, "--cwd", cwd, "--yolo", "--no-auto-update"], {
-      cwd,
-      env: grokEnv(),
-      stdio: "inherit",
-    });
+    const child = spawn(
+      bin,
+      [
+        "-p",
+        prompt,
+        "--cwd",
+        cwd,
+        "--yolo",
+        "--no-auto-update",
+        "--model",
+        process.env.GROK_MODEL || "grok-4.7-build-fast",
+        "--reasoning-effort",
+        process.env.GROK_EFFORT || "low",
+        "--disable-web-search",
+        "--no-subagents",
+      ],
+      {
+        cwd,
+        env: grokEnv(),
+        stdio: "inherit",
+      },
+    );
     const timer = setTimeout(() => {
       child.kill("SIGTERM");
       reject(new Error(`grok timed out after ${GROK_TIMEOUT_MS / 60000}m`));

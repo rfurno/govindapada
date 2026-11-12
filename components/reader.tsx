@@ -66,7 +66,7 @@ export function Reader({
     <section className="rounded-3xl border border-line bg-card p-5">
       {pending ? (
         <p className="text-sm text-muted">
-          Na fila. A peça aparece quando o gerador neste computador pegar o pedido.
+          Na fila. A peça aparece quando o gerador pegar o pedido.
         </p>
       ) : null}
       {error ? (
