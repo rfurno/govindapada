@@ -27,7 +27,7 @@ function argValue(flag) {
 
 function parseInterval(raw) {
   if (!raw) {
-    return 10 * 1000;
+    return 30 * 1000;
   }
   const match = String(raw).trim().match(/^(\d+)\s*(ms|s|m|h)$/i);
   if (!match) {

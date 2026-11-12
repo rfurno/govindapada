@@ -47,7 +47,7 @@ On the laptop, in this repo:
 npm run katha-loop
 ```
 
-Restart it after changing this script. It polls every 10 seconds. `--once` handles a single pending request. `--interval 30s` slows the poll.
+Restart it after changing this script. It polls every 30 seconds. `--once` handles a single pending request. `--interval 10s` is the fastest poll; `--interval 1m` slows it.
 
 Generation uses `grok-4.7-build-fast` with reasoning effort `low`, web search off, and subagents off. If `GROK_MODEL` or `GROK_EFFORT` are unset, those defaults apply. Check the current shell with `echo "$GROK_MODEL"`. A blank line means unset. Other models on this CLI are `grok-4.7`, `grok-4.6`, and `grok-4.5`. Effort is `low`, `medium`, `high`, or `xhigh`.
 
